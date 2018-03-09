@@ -6,215 +6,236 @@ import re
 import time
 from string import ascii_lowercase
 
-def setupgrid(gridsize, start, numberofmines):
-    emptygrid = [['0' for i in range(gridsize)] for i in range(gridsize)]
+class Minesweeper:
+    def __init__(self, master):
+        # import images
+        self.tile_plain = tkinter.PhotoImage(file = "images/tile_plain.png")
+        self.tile_clicked = tkinter.PhotoImage(file = "images/tile_clicked.png")
+        self.tile_mine = tkinter.PhotoImage(file = "images/tile_mine.png")
+        self.tile_flag = tkinter.PhotoImage(file = "images/tile_flag.png")
+        self.tile_wrong = tkinter.PhotoImage(file = "images/tile_wrong.png")
+        self.tile_no = {}
+		
+		#for tile numbers 1-8
+        for x in range(1, 9):
+            self.tile_no[x]=tkinter.PhotoImage(file = "images/tile_"+str(x)+".png")
 
-    mines = getmines(emptygrid, start, numberofmines)
+        # set up frame
+        frame = tkinter.Frame(master)
+        frame.pack()
 
-    for i, j in mines:
-        emptygrid[i][j] = 'X'
+        # show "Minesweeper" at the top
+        self.gridsize = 10
+        self.label1 = tkinter.Label(frame, text="Minesweeper")
+        self.label1.grid(row = 0, column = 0, columnspan = self.gridsize)
 
-    grid = getnumbers(emptygrid)
+        # create flag and clicked tile variables
+        self.flags = 0
+        self.correct_flags = 0
+        self.clicked = 0
 
-    return (grid, mines)
+        # create buttons
+        self.buttons = dict({})
+        self.mines = 0
+        self.numberofmines = 10
 
+		# tile image changeable for debug reasons:
+        gfx = self.tile_plain
+		
+        for x in range(self.gridsize):
+            for y in range(self.gridsize):
+                # 0 = Button widget
+                # 1 = if a mine y/n (1/0)
+                # 2 = state (0 = unclicked, 1 = clicked, 2 = flagged)
+                # 3 = [x, y] coordinates in the grid
+                # 4 = nearby mines, 0 by default, calculated after placement in grid
+                self.buttons[x, y] = [ tkinter.Button(frame, image = gfx),
+                                0,
+                                0,
+                                [x, y],
+                                0 ]
+                #if left clicked, go to lclicked_wrapper, else right clicked go rclicked_wrapper
+                self.buttons[x, y][0].bind('<Button-1>', self.lclicked_wrapper(*self.buttons[x,y][3]))
+                self.buttons[x, y][0].bind('<Button-3>', self.rclicked_wrapper(*self.buttons[x,y][3]))
+        
+        # lay buttons in grid
+        for key in self.buttons:
+            self.buttons[key][0].grid( row = self.buttons[key][3][0], column = self.buttons[key][3][1] )
+        
+        # find nearby mines and display number on tile
+        #add mine and count at the end
+        """
+        below is the code for labeling, can use for timer
+        """
+        self.label2 = tkinter.Label(frame, text = "Mines: "+str(self.numberofmines))
+        self.label2.grid(row = self.gridsize+1, column = 0, columnspan = self.gridsize//2)
 
-def showgrid(grid):
-    gridsize = len(grid)
+        self.label3 = tkinter.Label(frame, text = "Flags: "+str(self.flags))
+        self.label3.grid(row = self.gridsize+1, column = self.gridsize//2, columnspan = self.gridsize//2)
+    ## End of __init__
+	
+    def lclicked_wrapper(self, x, y):
+        return lambda Button: self.lclicked(self.buttons[x,y])
 
-    horizontal = '   ' + (4 * gridsize * '-') + '-'
+    def rclicked_wrapper(self, x, y):
+        return lambda Button: self.rclicked(self.buttons[x,y])
 
-    # Print top column letters
-    toplabel = '     '
+    def lclicked(self, button_data):
+        grid=[[0]*self.gridsize]*self.gridsize
+        if self.mines==0:
+            grid = self.setupgrid(button_data[3])
+            for x in range(self.gridsize):
+                for y in range(self.gridsize):
+                    if grid[x][y]=='X':
+                        self.buttons[x,y][1]=1
+                    else:
+                        self.buttons[x,y][4]=grid[x][y]
+            self.mines=self.numberofmines
+                    
+        if button_data[1] == 1: #if user clicked a mine
+            # show all mines and check for flags
+            for key in self.buttons:
+                #not a mine and flagged, wrong
+                if self.buttons[key][1] != 1 and self.buttons[key][2] == 2:
+                    self.buttons[key][0].config(image = self.tile_wrong)
+                #mine and not flagged, mine
+                if self.buttons[key][1] == 1 and self.buttons[key][2] != 2:
+                    self.buttons[key][0].config(image = self.tile_mine)
+            # end game
+            self.gameover()
+        else:
+            #change image
+            if button_data[4] == 0: #if neighbors no mine
+                self.showcells(grid,button_data)
+            
+            else: #if neighbors have mine
+                button_data[2] = 1
+                self.clicked += 1
+                button_data[0].config(image = self.tile_no[button_data[4]])
+                
+            if self.clicked == 100 - self.numberofmines:
+                self.victory()
 
-    for i in ascii_lowercase[:gridsize]:
-        toplabel = toplabel + i + '   '
+    def rclicked(self, button_data):
+        # if not clicked
+        if button_data[2] == 0:
+            button_data[0].config(image = self.tile_flag)
+            button_data[2] = 2
+            button_data[0].unbind('<Button-1>')
+            # if a mine
+            if button_data[1] == 1:
+                self.correct_flags += 1
+            self.flags += 1
+            self.update_flags()
+        # if flagged, unflag
+        elif button_data[2] == 2:
+            button_data[0].config(image = self.tile_plain)
+            button_data[2] = 0
+            button_data[0].bind('<Button-1>', self.lclicked_wrapper(*button_data[3]))
+            # if a mine
+            if button_data[1] == 1:
+                self.correct_flags -= 1
+            self.flags -= 1
+            self.update_flags()
 
-    print(toplabel + '\n' + horizontal)
+    """
+    this is where the label gets updated, timer needs to update this every second...?
+    """            
+    def update_flags(self):
+        self.label3.config(text = "Flags: "+str(self.flags))
+        
+    def gameover(self):
+        messagebox.showinfo("Game Over", "You Lose!")
+        global root
+        root.destroy()
 
-    # Print left row numbers
-    for idx, i in enumerate(grid):
-        row = '{0:2} |'.format(idx + 1)
+    def victory(self):
+        messagebox.showinfo("Game Over", "You Win!")
+        global root
+        root.destroy()
+        
+    def setupgrid(self, start):
+        emptygrid = [[0 for i in range(self.gridsize)] for i in range(self.gridsize)]
+        mines = self.getmines(emptygrid, start)
+        
+        for i, j in mines:
+            emptygrid[i][j] = 'X'
 
-        for j in i:
-            row = row + ' ' + j + ' |'
+        grid = self.getnumbers(emptygrid)
+        
+        return grid
 
-        print(row + '\n' + horizontal)
+    def getrandomcell(self):
+        a = random.randint(0, self.gridsize - 1)
+        b = random.randint(0, self.gridsize - 1)
+        return (a, b)
 
-    print('')
+    def getneighbors(self, grid, rowno, colno):
+        neighbors = []
+        
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                if i == 0 and j == 0:
+                    continue
+                elif -1 < (rowno + i) < len(grid) and -1 < (colno + j) < len(grid):
+                    neighbors.append((rowno + i, colno + j))
+        
+        return neighbors
 
+    def getmines(self, grid, start):
+        mines = []
+        neighbors = self.getneighbors(grid, *start)
+        
+        for i in range(self.numberofmines):
+            cell = self.getrandomcell()
+            while cell == start or cell in mines or cell in neighbors:
+                cell = self.getrandomcell()
+            mines.append(cell)
+            
+        return mines
 
-def getrandomcell(grid):
-    gridsize = len(grid)
+    def getnumbers(self, grid):
+        for rowno, row in enumerate(grid):
+            for colno, cell in enumerate(row):
+                if cell != 'X':
+                    #Gets the values of the neighbors
+                    values = [grid[r][c] for r, c in self.getneighbors(grid, rowno, colno)]
+					# Counts how many are mines
+                    grid[rowno][colno] = values.count('X')
 
-    a = random.randint(0, gridsize - 1)
-    b = random.randint(0, gridsize - 1)
+        return grid
 
-    return (a, b)
-
-
-def getneighbors(grid, rowno, colno):
-    gridsize = len(grid)
-    neighbors = []
-
-    for i in range(-1, 2):
-        for j in range(-1, 2):
-            if i == 0 and j == 0:
-                continue
-            elif -1 < (rowno + i) < gridsize and -1 < (colno + j) < gridsize:
-                neighbors.append((rowno + i, colno + j))
-
-    return neighbors
-
-
-def getmines(grid, start, numberofmines):
-    mines = []
-    neighbors = getneighbors(grid, *start)
-
-    for i in range(numberofmines):
-        cell = getrandomcell(grid)
-        while cell == start or cell in mines or cell in neighbors:
-            cell = getrandomcell(grid)
-        mines.append(cell)
-
-    return mines
-
-
-def getnumbers(grid):
-    for rowno, row in enumerate(grid):
-        for colno, cell in enumerate(row):
-            if cell != 'X':
-                # Gets the values of the neighbors
-                values = [grid[r][c] for r, c in getneighbors(grid,
-                                                              rowno, colno)]
-
-                # Counts how many are mines
-                grid[rowno][colno] = str(values.count('X'))
-
-    return grid
-
-
-def showcells(grid, currgrid, rowno, colno):
-    # Exit function if the cell was already shown
-    if currgrid[rowno][colno] != ' ':
-        return
-
-    # Show current cell
-    currgrid[rowno][colno] = grid[rowno][colno]
-
-    # Get the neighbors if the cell is empty
-    if grid[rowno][colno] == '0':
-        for r, c in getneighbors(grid, rowno, colno):
-            # Repeat function for each neighbor that doesn't have a flag
-            if currgrid[r][c] != 'F':
-                showcells(grid, currgrid, r, c)
-
-
-def playagain():
-    choice = input('Play again? (y/n): ')
-
-    return choice.lower() == 'y'
-
-
-def parseinput(inputstring, gridsize, helpmessage):
-    cell = ()
-    flag = False
-    message = "Invalid cell. " + helpmessage
-
-    pattern = r'([a-{}])([0-9]+)(f?)'.format(ascii_lowercase[gridsize - 1])
-    validinput = re.match(pattern, inputstring)
-
-    if inputstring == 'help':
-        message = helpmessage
-
-    elif validinput:
-        rowno = int(validinput.group(2)) - 1
-        colno = ascii_lowercase.index(validinput.group(1))
-        flag = bool(validinput.group(3))
-
-        if -1 < rowno < gridsize:
-            cell = (rowno, colno)
-            message = ''
-
-    return {'cell': cell, 'flag': flag, 'message': message}
-
-
-def playgame():
-    gridsize = 9
-    numberofmines = 10
-
-    currgrid = [[' ' for i in range(gridsize)] for i in range(gridsize)]
-
-    grid = []
-    flags = []
-    starttime = 0
-
-    helpmessage = ("Type the column followed by the row (eg. a5). "
-                   "To put or remove a flag, add 'f' to the cell (eg. a5f).")
-
-    showgrid(currgrid)
-    print(helpmessage + " Type 'help' to show this message again.\n")
-
-    while True:
-        minesleft = numberofmines - len(flags)
-        prompt = input('Enter the cell ({} mines left): '.format(minesleft))
-        result = parseinput(prompt, gridsize, helpmessage + '\n')
-
-        message = result['message']
-        cell = result['cell']
-
-        if cell:
-            print('\n\n')
-            rowno, colno = cell
-            currcell = currgrid[rowno][colno]
-            flag = result['flag']
-
-            if not grid:
-                grid, mines = setupgrid(gridsize, cell, numberofmines)
-            if not starttime:
-                starttime = time.time()
-
-            if flag:
-                # Add a flag if the cell is empty
-                if currcell == ' ':
-                    currgrid[rowno][colno] = 'F'
-                    flags.append(cell)
-                # Remove the flag if there is one
-                elif currcell == 'F':
-                    currgrid[rowno][colno] = ' '
-                    flags.remove(cell)
-                else:
-                    message = 'Cannot put a flag there'
-
-            # If there is a flag there, show a message
-            elif cell in flags:
-                message = 'There is a flag there'
-
-            elif grid[rowno][colno] == 'X':
-                print('Game Over\n')
-                showgrid(grid)
-                if playagain():
-                    playgame()
-                return
-
-            elif currcell == ' ':
-                showcells(grid, currgrid, rowno, colno)
-
-            else:
-                message = "That cell is already shown"
-
-            if set(flags) == set(mines):
-                minutes, seconds = divmod(int(time.time() - starttime), 60)
-                print(
-                    'You Win. '
-                    'It took you {} minutes and {} seconds.\n'.format(minutes,
-                                                                      seconds))
-                showgrid(grid)
-                if playagain():
-                    playgame()
-                return
-
-        showgrid(currgrid)
-        print(message)
-
-playgame()
+    def showcells(self, grid, button_data):
+        # Exit function if the cell was already shown
+        if button_data[2]==1:
+            return
+        
+        # Show current cell
+        button_data[2]=1
+        self.clicked += 1
+        
+        #change image
+        if button_data[4]==0:
+            button_data[0].config(image = self.tile_clicked)
+        else:
+            button_data[0].config(image = self.tile_no[button_data[4]])
+            
+        # Get the neighbors if the cell is empty
+        if button_data[4] == 0:
+            for r, c in self.getneighbors(grid, *button_data[3]):
+                # Repeat function for each neighbor that doesn't have a flag
+                if self.buttons[r,c][2] != 2:
+                    self.showcells(grid, self.buttons[r,c])
+                    
+def main():
+    global root
+    # create Tk widget
+    root = tkinter.Tk()
+    # set program title
+    root.title("Minesweeper")
+    # create game instance
+    minesweeper = Minesweeper(root)
+    # run event loop
+    root.mainloop()
+if __name__ == "__main__":
+    main()
