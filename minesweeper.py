@@ -36,8 +36,9 @@ class Minesweeper:
         self.clicked = 0
         
         # timer counter
-        self.timerCounter = 0;
-
+        self.timerCounter = 0
+        
+        
         # create buttons
         self.buttons = dict({})
         self.mines = 0
@@ -165,14 +166,63 @@ class Minesweeper:
         
     def gameover(self):
         messagebox.showinfo("Game Over", "You Lose!")
+        #print(self.timerCounter)
+        self.writeToFile(False)
         global root
         root.destroy()
 
     def victory(self):
         messagebox.showinfo("Game Over", "You Win!")
+        self.writeToFile(True)
         global root
         root.destroy()
         
+        
+    def writeToFile(self, win):
+        """get user input"""
+        username = "Amy"
+        username = username.lower() #username is case insensitive
+        newScore = self.calculateScore(win)     
+        
+        try:
+            file = open('MineSweeperScore.txt', 'r')
+            fileContent = file.readlines()
+            
+            scoreDic = {}
+            for string in fileContent:
+                li = string.split(":")
+                scoreDic[li[0]] = li[1].replace(' ','').replace("\n", '')
+                
+            if username in scoreDic:
+                oldScore = float(scoreDic.get(username))
+                scoreDic[username] = str(oldScore + newScore)    
+            else:
+                scoreDic[username] = str(newScore) 
+                
+            file = open('MineSweeperScore.txt', 'w')
+            for k, v in scoreDic.items():
+                file.write(k + ': ' + v + '\n')                
+            file.close()  
+            
+        except FileNotFoundError:
+            file = open('MineSweeperScore.txt', 'w')
+            file.write(username + ': ' + str(newScore))
+            file.close()
+        
+    def calculateScore(self, win):
+        """ timer should stop when user loses/wins """
+        """ scoring method could be improved """
+        if win:
+            if self.timerCounter != 0:
+                return (10 / self.timerCounter) * 10
+            else: 
+                return 100
+        else:
+            if self.timerCounter != 0:
+                return (5 / self.timerCounter) * 10
+            else: 
+                return 50
+                
     def setupgrid(self, start):
         emptygrid = [[0 for i in range(self.gridsize)] for i in range(self.gridsize)]
         mines = self.getmines(emptygrid, start)
@@ -212,7 +262,7 @@ class Minesweeper:
             mines.append(cell)
             
         return mines
-
+    
     def getnumbers(self, grid):
         for rowno, row in enumerate(grid):
             for colno, cell in enumerate(row):
