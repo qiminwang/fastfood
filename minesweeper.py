@@ -4,6 +4,7 @@ from tkinter import messagebox
 import tkinter
 import re
 import time
+import sched
 from string import ascii_lowercase
 
 class Minesweeper:
@@ -33,6 +34,9 @@ class Minesweeper:
         self.flags = 0
         self.correct_flags = 0
         self.clicked = 0
+        
+        # timer counter
+        self.timerCounter = 0;
 
         # create buttons
         self.buttons = dict({})
@@ -68,10 +72,17 @@ class Minesweeper:
         below is the code for labeling, can use for timer
         """
         self.label2 = tkinter.Label(frame, text = "Mines: "+str(self.numberofmines))
-        self.label2.grid(row = self.gridsize+1, column = 0, columnspan = self.gridsize//2)
+        self.label2.grid(row = self.gridsize+1, column = 0, columnspan = self.gridsize//3)
 
         self.label3 = tkinter.Label(frame, text = "Flags: "+str(self.flags))
-        self.label3.grid(row = self.gridsize+1, column = self.gridsize//2, columnspan = self.gridsize//2)
+        self.label3.grid(row = self.gridsize+1, column = self.gridsize//3, columnspan = self.gridsize//3)
+        
+        #time label
+        self.label4 = tkinter.Label(frame, text = "Time: "+str(self.timerCounter))
+        self.label4.grid(row = self.gridsize+1, column = round(self.gridsize//1.5), columnspan = self.gridsize//3)
+        
+        # start timer
+        self.update_time()
     ## End of __init__
 	
     def lclicked_wrapper(self, x, y):
@@ -141,6 +152,14 @@ class Minesweeper:
     """
     this is where the label gets updated, timer needs to update this every second...?
     """            
+
+    def update_time(self): 
+        global root
+        self.timerCounter = self.timerCounter + 1;
+        self.label4.config(text = "Time: "+str(self.timerCounter))
+        root.after(1000, self.update_time)
+    
+    
     def update_flags(self):
         self.label3.config(text = "Flags: "+str(self.flags))
         
@@ -237,5 +256,7 @@ def main():
     minesweeper = Minesweeper(root)
     # run event loop
     root.mainloop()
+    
+    
 if __name__ == "__main__":
     main()
