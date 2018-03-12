@@ -25,15 +25,10 @@ class Minesweeper:
         # set up frame
         frame = tkinter.Frame(master)
         frame.pack()
-
-        # show "Minesweeper" at the top
         self.gridsize = 10
-        self.label1 = tkinter.Label(frame, text="Minesweeper")
-        self.label1.grid(row = 0, column = 0, columnspan = self.gridsize)
-
+       
         # create flag and clicked tile variables
         self.flags = 0
-        self.correct_flags = 0
         self.clicked = 0
         
         # timer counter
@@ -135,9 +130,6 @@ class Minesweeper:
             button_data[0].config(image = self.tile_flag)
             button_data[2] = 2
             button_data[0].unbind('<Button-1>')
-            # if a mine
-            if button_data[1] == 1:
-                self.correct_flags += 1
             self.flags += 1
             self.update_flags()
         # if flagged, unflag
@@ -145,9 +137,6 @@ class Minesweeper:
             button_data[0].config(image = self.tile_plain)
             button_data[2] = 0
             button_data[0].bind('<Button-1>', self.lclicked_wrapper(*button_data[3]))
-            # if a mine
-            if button_data[1] == 1:
-                self.correct_flags -= 1
             self.flags -= 1
             self.update_flags()
 
