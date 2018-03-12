@@ -7,6 +7,7 @@ import re
 import time
 import sched
 from string import ascii_lowercase
+import math
 
 class Minesweeper:
     def __init__(self, master):
@@ -158,9 +159,7 @@ class Minesweeper:
         global root
         name = simpledialog.askstring("Input", "Enter Your Name", parent=root)
         messagebox.showinfo("Game Over", "You Lose!")
-        #print(self.timerCounter)
-        self.writeToFile(False, name)
-        
+        self.writeToFile(False, name)        
         root.destroy()
 
     def victory(self):
@@ -173,7 +172,6 @@ class Minesweeper:
         
     def writeToFile(self, win, username):
         """get user input"""
-        #username = "Amy"
         username = username.lower() #username is case insensitive
         newScore = self.calculateScore(win)     
         
@@ -194,12 +192,13 @@ class Minesweeper:
                 
             file = open('MineSweeperScore.txt', 'w')
             for k, v in scoreDic.items():
-                file.write(k + ': ' + v + '\n')                
-            file.close()  
+                file.write(k + ': ' + v + '\n')                  
             
         except FileNotFoundError:
             file = open('MineSweeperScore.txt', 'w')
             file.write(username + ': ' + str(newScore))
+            
+        finally:
             file.close()
         
     def calculateScore(self, win):
@@ -207,14 +206,14 @@ class Minesweeper:
         """ scoring method could be improved """
         if win:
             if self.timerCounter != 0:
-                return (10 / self.timerCounter) * 10
+                return math.ceil(1000 / self.timerCounter) #math function
             else: 
-                return 100
+                return 1000
         else:
-            if self.timerCounter != 0:
-                return (5 / self.timerCounter) * 10
+            if self.timerCounter != 0:  # to avoid ZeroDivisionError: division by zero  [ErrorType]
+                return math.ceil(500 / self.timerCounter)
             else: 
-                return 50
+                return 500
                 
     def setupgrid(self, start):
         emptygrid = [[0 for i in range(self.gridsize)] for i in range(self.gridsize)]
