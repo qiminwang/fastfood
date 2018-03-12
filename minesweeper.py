@@ -1,6 +1,7 @@
 """A command line version of Minesweeper"""
 import random
 from tkinter import messagebox
+from tkinter import simpledialog
 import tkinter
 import re
 import time
@@ -165,22 +166,25 @@ class Minesweeper:
         self.label3.config(text = "Flags: "+str(self.flags))
         
     def gameover(self):
+        global root
+        name = simpledialog.askstring("Input", "Enter Your Name", parent=root)
         messagebox.showinfo("Game Over", "You Lose!")
         #print(self.timerCounter)
-        self.writeToFile(False)
-        global root
+        self.writeToFile(False, name)
+        
         root.destroy()
 
     def victory(self):
-        messagebox.showinfo("Game Over", "You Win!")
-        self.writeToFile(True)
         global root
+        name = simpledialog.askstring("Input", "Enter Your Name", parent=root)
+        messagebox.showinfo("Game Over", "You Win!")
+        self.writeToFile(True, name)
         root.destroy()
         
         
-    def writeToFile(self, win):
+    def writeToFile(self, win, username):
         """get user input"""
-        username = "Amy"
+        #username = "Amy"
         username = username.lower() #username is case insensitive
         newScore = self.calculateScore(win)     
         
