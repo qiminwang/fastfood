@@ -37,7 +37,7 @@ class Minesweeper:
         
         
         # create buttons
-        self.buttons = dict({})
+        self.buttons = dict()
         self.mines = 0
         self.numberofmines = 10
 
