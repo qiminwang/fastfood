@@ -57,9 +57,9 @@ class Minesweeper:
                                 [x, y],
                                 0 ]
                 #if left clicked, go to lclicked_wrapper, else right clicked go rclicked_wrapper
-                self.buttons[x, y][0].bind('<Button-1>', self.lclicked_wrapper(*self.buttons[x,y][3]))
-                self.buttons[x, y][0].bind('<Button-3>', self.rclicked_wrapper(*self.buttons[x,y][3]))
-        
+                self.buttons[x, y][0].bind('<Button-1>', self.lclicked_wrapper(self.buttons[x,y]))
+                self.buttons[x, y][0].bind('<Button-3>', self.rclicked_wrapper(self.buttons[x,y]))
+                
         # lay buttons in grid
         for key in self.buttons:
             self.buttons[key][0].grid( row = self.buttons[key][3][0], column = self.buttons[key][3][1] )
@@ -83,11 +83,11 @@ class Minesweeper:
         self.update_time()
     ## End of __init__
 	
-    def lclicked_wrapper(self, x, y):
-        return lambda Button: self.lclicked(self.buttons[x,y])
+    def lclicked_wrapper(self, button_data):
+        return lambda Button: self.lclicked(button_data)
 
-    def rclicked_wrapper(self, x, y):
-        return lambda Button: self.rclicked(self.buttons[x,y])
+    def rclicked_wrapper(self, button_data):
+        return lambda Button: self.rclicked(button_data)
 
     def lclicked(self, button_data):
         grid=[[0]*self.gridsize]*self.gridsize
@@ -133,11 +133,12 @@ class Minesweeper:
             button_data[0].unbind('<Button-1>')
             self.flags += 1
             self.update_flags()
+        
         # if flagged, unflag
         elif button_data[2] == 2:
             button_data[0].config(image = self.tile_plain)
             button_data[2] = 0
-            button_data[0].bind('<Button-1>', self.lclicked_wrapper(*button_data[3]))
+            button_data[0].bind('<Button-1>', self.lclicked_wrapper(button_data))
             self.flags -= 1
             self.update_flags()
 
@@ -157,9 +158,7 @@ class Minesweeper:
         
     def gameover(self):
         global root
-        name = simpledialog.askstring("Input", "Enter Your Name", parent=root)
-        messagebox.showinfo("Game Over", "You Lose!")
-        self.writeToFile(False, name)        
+        messagebox.showinfo("Game Over", "You Lose!")      
         root.destroy()
 
     def victory(self):
@@ -249,7 +248,7 @@ class Minesweeper:
         
         for i in range(self.numberofmines):
             cell = self.getrandomcell()
-            while cell == start or cell in mines or cell in neighbors:
+            while list(cell) == start or cell in mines or cell in neighbors:
                 cell = self.getrandomcell()
             mines.append(cell)
             
