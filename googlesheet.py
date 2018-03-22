@@ -7,9 +7,8 @@ from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 
-from pprint import pprint
-
 from googleapiclient import discovery
+from googleapiclient.errors import HttpError
 
 try:
     import argparse
@@ -52,7 +51,7 @@ def get_credentials():
         print('Storing credentials to ' + credential_path)
     return credentials
 
-def main():
+def write_to_googleSpreadsheet(username, newScore):
     """
     Creates a Sheets API service object and gets the names and scores 
     https://docs.google.com/spreadsheets/d/1wLJTkLUzMzNsjXkqZoeDxfZSj92xvi6QLlGrNRIWMgQ/edit#gid=0
@@ -63,50 +62,73 @@ def main():
                     'version=v4')
  
     service = discovery.build('sheets', 'v4', http=http, discoveryServiceUrl=discoveryUrl)
-
-    spreadsheet_id = '1wLJTkLUzMzNsjXkqZoeDxfZSj92xvi6QLlGrNRIWMgQ'
-    range_name = 'ScoreTable'
-    result = service.spreadsheets().values().get(
-        spreadsheetId=spreadsheet_id, range=range_name).execute()
-    values = result.get('values', [])
     
-    username = "Emma"
-    username = username.lower() #username is case insensitive
-    #newScore = self.calculateScore(win)
-    newScore = 15
+    #get google spreadsheet id
+    file = open('config', 'r')
+    url_string = file.read()
+    file.close()
+    
+    spreadsheet_id = url_string.split(":")[1].replace(" ", "")  
+    range_name = 'ScoreTable'
+    
     scoreDic = {}
     
-    if not values:
-        #empty sheet, write new record
+    try:
+        result = service.spreadsheets().values().get(
+            spreadsheetId=spreadsheet_id, range=range_name).execute()
+        values = result.get('values', [])
+        
+        if not values:
+            #empty sheet, write new record
+            scoreDic[username] = str(newScore) 
+            
+        else:
+            for record_list in values:
+                if len(record_list) != 0:
+                    scoreDic[record_list[0]] = record_list[1]
+                    
+            if username in scoreDic:
+                oldScore = float(scoreDic.get(username))
+                scoreDic[username] = str(oldScore + newScore)    
+            else:
+                scoreDic[username] = str(newScore) 
+    
+    except HttpError:
+        spreadsheet_body = {
+            "sheets": [
+                {
+                    "properties": {
+                    "title": "ScoreTable"
+                    }
+                }
+            ],
+            "properties": {
+                "title": "QF205G1T6"
+            }
+        }
+        request = service.spreadsheets().create(body=spreadsheet_body)
+        response = request.execute()
+
+        spreadsheet_id = response.get('spreadsheetId')
         scoreDic[username] = str(newScore) 
         
-    else:
-        scoreDic = {}
-        for record_list in values:
-            if len(record_list) != 0:
-                scoreDic[record_list[0]] = record_list[1]
-                
-        if username in scoreDic:
-            oldScore = float(scoreDic.get(username))
-            scoreDic[username] = str(oldScore + newScore)    
-        else:
-            scoreDic[username] = str(newScore) 
+        #update new URL to config file
+        #with statement can help close file automatically 
+        with open("config", "w") as file: 
+            file.write("spreadsheet_id: " + spreadsheet_id) 
     
-    #create values_to_write list
-    values_to_write = list()
-    
-    for k, v in scoreDic.items():
-        values_to_write.append([k, v])
-    
-    body = {
-        'values': values_to_write
-    }
-    
-    #write to ScoreTable sheet
-    result = service.spreadsheets().values().update(
-        spreadsheetId=spreadsheet_id, range=range_name,
-        valueInputOption="USER_ENTERED", body=body).execute()
-
-    
-if __name__ == '__main__':
-    main()
+    finally:
+        #create values_to_write list
+        values_to_write = list()
+        
+        for k, v in scoreDic.items():
+            values_to_write.append([k, v])
+        
+        body = {
+            'values': values_to_write
+        }
+        
+        #write to ScoreTable sheet
+        result = service.spreadsheets().values().update(
+            spreadsheetId=spreadsheet_id, range=range_name,
+            valueInputOption="USER_ENTERED", body=body).execute()

@@ -1,4 +1,4 @@
-"""A command line version of Minesweeper"""
+""" QF205 G1 Team 6 - MineSweeper Application """
 import random
 from tkinter import messagebox
 from tkinter import simpledialog
@@ -8,9 +8,10 @@ import time
 import sched
 from string import ascii_lowercase
 import math
+import googlesheet as gs
 
 class Minesweeper:
-    def __init__(self, master):
+    def __init__(self, root):
         # import images
         self.tile_plain = tkinter.PhotoImage(file = "images/tile_plain.png")
         self.tile_clicked = tkinter.PhotoImage(file = "images/tile_clicked.png")
@@ -24,7 +25,7 @@ class Minesweeper:
             self.tile_no[x]=tkinter.PhotoImage(file = "images/tile_"+str(x)+".png")
 
         # set up frame
-        frame = tkinter.Frame(master)
+        frame = tkinter.Frame(root)
         frame.pack()
         self.gridsize = 10
        
@@ -122,7 +123,7 @@ class Minesweeper:
                 self.clicked += 1
                 button_data[0].config(image = self.tile_no[button_data[4]])
                 
-            if self.clicked == 100 - self.numberofmines:
+            if self.clicked == self.gridsize*self.gridsize - self.numberofmines:
                 self.victory()
 
     def rclicked(self, button_data):
@@ -158,61 +159,33 @@ class Minesweeper:
         
     def gameover(self):
         global root
-        messagebox.showinfo("Game Over", "You Lose!")      
+        messagebox.showinfo("Game Over", "You Lose!")        
         root.destroy()
 
     def victory(self):
         global root
         name = simpledialog.askstring("Input", "Enter Your Name", parent=root)
         messagebox.showinfo("Game Over", "You Win!")
-        self.writeToFile(True, name)
+        self.writeToFile(name)
         root.destroy()
         
         
-    def writeToFile(self, win, username):
-        """get user input"""
+    def writeToFile(self, username):
+        #get user input
         username = username.lower() #username is case insensitive
-        newScore = self.calculateScore(win)     
+        newScore = self.calculateScore()     
         
-        try:
-            file = open('MineSweeperScore.txt', 'r')
-            fileContent = file.readlines()
-            
-            scoreDic = {}
-            for string in fileContent:
-                li = string.split(":")
-                scoreDic[li[0]] = li[1].replace(' ','').replace("\n", '')
-                
-            if username in scoreDic:
-                oldScore = float(scoreDic.get(username))
-                scoreDic[username] = str(oldScore + newScore)    
-            else:
-                scoreDic[username] = str(newScore) 
-                
-            file = open('MineSweeperScore.txt', 'w')
-            for k, v in scoreDic.items():
-                file.write(k + ': ' + v + '\n')                  
-            
-        except FileNotFoundError:
-            file = open('MineSweeperScore.txt', 'w')
-            file.write(username + ': ' + str(newScore))
-            
-        finally:
-            file.close()
+        #write to googlesheet
+        gs.write_to_googleSpreadsheet(username, newScore)
         
-    def calculateScore(self, win):
+    def calculateScore(self):
         """ timer should stop when user loses/wins """
-        """ scoring method could be improved """
-        if win:
-            if self.timerCounter != 0:
-                return math.ceil(1000 / self.timerCounter) #math function
-            else: 
-                return 1000
-        else:
-            if self.timerCounter != 0:  # to avoid ZeroDivisionError: division by zero  [ErrorType]
-                return math.ceil(500 / self.timerCounter)
-            else: 
-                return 500
+        #only calculate score when player wins
+        if self.timerCounter != 0:   # to avoid ZeroDivisionError: division by zero  [ErrorType]
+            return math.ceil(1000 / self.timerCounter) #math function
+        else: 
+            return 1000
+
                 
     def setupgrid(self, start):
         emptygrid = [[0 for i in range(self.gridsize)] for i in range(self.gridsize)]
