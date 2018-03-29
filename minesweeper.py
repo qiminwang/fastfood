@@ -187,10 +187,11 @@ class Minesweeper:
     def calculateScore(self):
         """ timer should stop when user loses/wins """
         #only calculate score when player wins
-        if self.timerCounter != 0:   # to avoid ZeroDivisionError: division by zero  [ErrorType]
-            return math.ceil(1000 / self.timerCounter) #math function
+        if self.timerCounter <= 100:   # to avoid ZeroDivisionError: division by zero  [ErrorType]
+            rawScore = 10000 - self.timerCounter ** 2
+            return math.ceil(rawScore) #math function
         else: 
-            return 1000
+            return 0
 
                 
     def setupgrid(self, start):
