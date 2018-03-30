@@ -1,7 +1,6 @@
 """ QF205 G1 Team 6 - MineSweeper Application """
 import random
-from tkinter import messagebox
-from tkinter import simpledialog
+from tkinter import messagebox, simpledialog
 import tkinter
 import re
 import time
