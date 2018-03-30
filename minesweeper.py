@@ -169,7 +169,7 @@ class Minesweeper:
     def victory(self):
         global root
         self.gameover = 1
-        name = simpledialog.askstring("Input", "Enter Your Name", parent=root)
+        name = simpledialog.askstring("Input", "Enter Your Name")
         messagebox.showinfo("Game Over", "You Win!")
         self.writeToFile(name)
         root.destroy()
