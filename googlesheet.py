@@ -88,10 +88,10 @@ def write_to_googleSpreadsheet(username, newScore):
                     scoreDic[record_list[0]] = record_list[1]
                     
             if username in scoreDic:
-                oldScore = float(scoreDic.get(username))
-                scoreDic[username] = str(oldScore + newScore)    
+                oldScore = float(scoreDic.get(username)) 
+                scoreDic.update({username: str(oldScore + newScore)})
             else:
-                scoreDic[username] = str(newScore) 
+                scoreDic.update({username: str(newScore)})  
     
     except HttpError:
         spreadsheet_body = {
