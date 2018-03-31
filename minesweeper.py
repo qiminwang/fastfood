@@ -104,7 +104,7 @@ class Minesweeper:
 
     def lclicked(self, button_data):
         # initialize 2D grid of size 10 by 10
-        grid=[[0]*self.gridsize]*self.gridsize
+        grid = [[0] * self.gridsize] * self.gridsize
         
         # this is only ran once, on the very first click
         if self.mines == 0:
