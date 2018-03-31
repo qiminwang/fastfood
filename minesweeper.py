@@ -59,7 +59,7 @@ class Minesweeper:
                                 0,
                                 [x, y],
                                 0 ]
-                #if left clicked, go to lclicked_wrapper, else right clicked go rclicked_wrapper
+                #if left clicked, run lclicked_wrapper function, else right clicked run rclicked_wrapper function
                 self.buttons[x, y][0].bind('<Button-1>', self.lclicked_wrapper(self.buttons[x,y]))
                 self.buttons[x, y][0].bind('<Button-3>', self.rclicked_wrapper(self.buttons[x,y]))
                 
