@@ -2,10 +2,7 @@
 import random
 from tkinter import messagebox, simpledialog
 import tkinter
-import re
 import time
-import sched
-from string import ascii_lowercase
 import math
 import googlesheet as gs
 
