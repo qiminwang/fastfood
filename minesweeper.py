@@ -184,11 +184,13 @@ class Minesweeper:
         gs.write_to_googleSpreadsheet(username, newScore)
         
     def calculateScore(self):
-        """ timer should stop when user loses/wins """
         #only calculate score when player wins
-        if self.timerCounter <= 100:   # to avoid ZeroDivisionError: division by zero  [ErrorType]
-            rawScore = 10000 - self.timerCounter ** 2
-            return math.ceil(rawScore) #math function
+        if self.timerCounter <= 60:   
+            rawScore = (300 ** 2 - 60 ** 2) * 60 / self.timerCounter
+            return math.ceil(rawScore)
+        elif self.timerCounter <= 300:
+            rawScore = 300 ** 2 - self.timerCounter ** 2
+            return rawScore #math function
         else: 
             return 0
 

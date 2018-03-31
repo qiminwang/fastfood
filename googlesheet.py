@@ -64,7 +64,7 @@ def write_to_googleSpreadsheet(username, newScore):
     service = discovery.build('sheets', 'v4', http=http, discoveryServiceUrl=discoveryUrl)
     
     #get google spreadsheet id
-    file = open('config', 'r')
+    file = open('config')
     url_string = file.read()
     file.close()
     
@@ -108,7 +108,7 @@ def write_to_googleSpreadsheet(username, newScore):
         }
         request = service.spreadsheets().create(body=spreadsheet_body)
         response = request.execute()
-
+        
         spreadsheet_id = response.get('spreadsheetId')
         scoreDic[username] = str(newScore) 
         
