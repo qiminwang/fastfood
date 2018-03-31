@@ -59,13 +59,19 @@ class Minesweeper:
                                 0,
                                 [x, y],
                                 0 ]
-                #if left clicked, run lclicked_wrapper function, else right clicked run rclicked_wrapper function
-                self.buttons[x, y][0].bind('<Button-1>', self.lclicked_wrapper(self.buttons[x,y]))
-                self.buttons[x, y][0].bind('<Button-3>', self.rclicked_wrapper(self.buttons[x,y]))
+                                
+                #if left clicked, run lclicked_wrapper function, 
+                #else right clicked run rclicked_wrapper function
+                self.buttons[x, y][0].bind('<Button-1>', 
+                                            self.lclicked_wrapper(self.buttons[x,y]))
+                
+                self.buttons[x, y][0].bind('<Button-3>', 
+                                            self.rclicked_wrapper(self.buttons[x,y]))
                 
         # lay buttons in grid
         for key in self.buttons:
-            self.buttons[key][0].grid( row = self.buttons[key][3][0], column = self.buttons[key][3][1] )
+            self.buttons[key][0].grid(row = self.buttons[key][3][0], 
+                                      column = self.buttons[key][3][1])
         
         # find nearby mines and display number on tile
         #add mine and count at the end
@@ -73,14 +79,20 @@ class Minesweeper:
         below is the code for labeling, can use for timer
         """
         self.label2 = tkinter.Label(frame, text = "Mines: "+str(self.numberofmines))
-        self.label2.grid(row = self.gridsize+1, column = 0, columnspan = self.gridsize//3)
+        self.label2.grid(row = self.gridsize+1, 
+                         column = 0, 
+                         columnspan = self.gridsize//3)
 
         self.label3 = tkinter.Label(frame, text = "Flags: "+str(self.flags))
-        self.label3.grid(row = self.gridsize+1, column = self.gridsize//3, columnspan = self.gridsize//3)
+        self.label3.grid(row = self.gridsize+1, 
+                         column = self.gridsize//3, 
+                         columnspan = self.gridsize//3)
         
         #time label
         self.label4 = tkinter.Label(frame, text = "Time: "+str(self.timerCounter))
-        self.label4.grid(row = self.gridsize+1, column = round(self.gridsize//1.5), columnspan = self.gridsize//3)
+        self.label4.grid(row = self.gridsize+1, 
+                         column = round(self.gridsize//1.5), 
+                         columnspan = self.gridsize//3)
         
         # start timer
         self.update_time()
@@ -146,7 +158,7 @@ class Minesweeper:
             self.update_flags()
 
     """
-    this is where the label gets updated, timer needs to update this every second...?
+    this is where the label gets updated, timer needs to update this every second
     """            
 
     def update_time(self): 
@@ -163,7 +175,7 @@ class Minesweeper:
     def gameover(self):
         global root
         self.gameoverstatus = 1
-        messagebox.showinfo("Game Over", "You Lose!")        
+        messagebox.showinfo("Game Over", "You Lose!")    
         root.destroy()
 
     def victory(self):
@@ -218,7 +230,8 @@ class Minesweeper:
             for j in range(-1, 2):
                 if i == 0 and j == 0:
                     continue
-                elif -1 < (rowno + i) < len(grid) and -1 < (colno + j) < len(grid):
+                elif (-1 < (rowno + i) < len(grid) 
+                      and -1 < (colno + j) < len(grid)):
                     neighbors.append((rowno + i, colno + j))
         
         return neighbors
@@ -231,6 +244,7 @@ class Minesweeper:
             cell = self.getrandomcell()
             while list(cell) == start or cell in mines or cell in neighbors:
                 cell = self.getrandomcell()
+                
             mines.append(cell)
             
         return mines
@@ -240,7 +254,8 @@ class Minesweeper:
             for colno, cell in enumerate(row):
                 if cell != 'X':
                     #Gets the values of the neighbors
-                    values = [grid[r][c] for r, c in self.getneighbors(grid, rowno, colno)]
+                    values = [grid[r][c] 
+                              for r, c in self.getneighbors(grid, rowno, colno)]
 					# Counts how many are mines
                     grid[rowno][colno] = values.count('X')
 

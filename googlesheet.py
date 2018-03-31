@@ -29,8 +29,7 @@ def get_credentials():
     If nothing has been stored, or if the stored credentials are invalid,
     the OAuth2 flow is completed to obtain the new credentials.
 
-    Returns:
-        Credentials, the obtained credential.
+    Returns: Credentials, the obtained credential.
     """
     home_dir = os.path.expanduser('~')
     credential_dir = os.path.join(home_dir, '.credentials')
@@ -54,14 +53,15 @@ def get_credentials():
 def write_to_googleSpreadsheet(username, newScore):
     """
     Creates a Sheets API service object and gets the names and scores 
-    https://docs.google.com/spreadsheets/d/1wLJTkLUzMzNsjXkqZoeDxfZSj92xvi6QLlGrNRIWMgQ/edit#gid=0
+    https://docs.google.com/spreadsheets/d/1wLJTkLUzMzNsjXkqZoeDxfZSj92xvi6QLlGrNRIWMgQ
     """
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
     discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
                     'version=v4')
  
-    service = discovery.build('sheets', 'v4', http=http, discoveryServiceUrl=discoveryUrl)
+    service = discovery.build('sheets', 'v4', http=http, 
+                               discoveryServiceUrl=discoveryUrl)
     
     #get google spreadsheet id
     file = open('config')
@@ -70,12 +70,12 @@ def write_to_googleSpreadsheet(username, newScore):
     
     spreadsheet_id = url_string.split(":")[1].replace(" ", "")  
     range_name = 'ScoreTable'
-    
     scoreDic = {}
     
     try:
         result = service.spreadsheets().values().get(
             spreadsheetId=spreadsheet_id, range=range_name).execute()
+        
         values = result.get('values', [])
         
         if not values:
