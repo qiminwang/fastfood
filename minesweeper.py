@@ -213,7 +213,7 @@ class Minesweeper:
             rawScore = 300 ** 2 - self.timerCounter ** 2
             return rawScore
         
-        # winning after 6minutes, 0 score
+        # winning after 5 min, 0 score
         else: 
             return 0
 
