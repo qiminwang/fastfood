@@ -217,7 +217,15 @@ class Minesweeper:
         else: 
             return 0
 
-                
+    """
+    This function generates a numbered grid by
+    1) locating positions of mines through getmines()
+    2) marking these mines in an empty 2D grid
+    3) passing this marked grid to getnumbers(), 
+       which then locates the neighbors of each cell using getneighbors()
+       and count the number of mines in these neighbors 
+       and return the numbers on the marked grid
+    """            
     def setupgrid(self, start):
         emptygrid = [[0 for i in range(self.gridsize)] for i in range(self.gridsize)]
         mines = self.getmines(emptygrid, start)
