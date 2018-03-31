@@ -80,7 +80,7 @@ class Minesweeper:
         
         #time label
         self.label4 = tkinter.Label(frame, text = "Time: "+str(self.timerCounter))
-        self.label4.grid(row = self.gridsize+1, column = self.gridsize//1.5, columnspan = self.gridsize//3)
+        self.label4.grid(row = self.gridsize+1, column = round(self.gridsize//1.5), columnspan = self.gridsize//3)
         
         # start timer
         self.update_time()
