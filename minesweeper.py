@@ -28,24 +28,26 @@ class Minesweeper:
         frame.pack()
         self.gridsize = 10
        
-        # create flag and clicked tile variables
+        # flag and clicked tile variables
         self.flags = 0
         self.clicked = 0
         
         # timer counter
         self.timerCounter = 0
         
-        #gameover flag
+        # gameover flag
         self.gameoverstatus = 0
         
         
-        # create buttons
+        # dictionary of buttons
         self.buttons = dict()
+        
+        # mine and numberofmines variables
         self.mines = 0
         self.numberofmines = 10
-
-		# tile image changeable for debug reasons:
-        gfx = self.tile_plain
+        
+        # set default image
+        default = self.tile_plain
 		
         for x in range(self.gridsize):
             for y in range(self.gridsize):
@@ -54,7 +56,7 @@ class Minesweeper:
                 # 2 = state (0 = unclicked, 1 = clicked, 2 = flagged)
                 # 3 = [x, y] coordinates in the grid
                 # 4 = nearby mines, 0 by default, calculated after placement in grid
-                self.buttons[x, y] = [ tkinter.Button(frame, image = gfx),
+                self.buttons[x, y] = [ tkinter.Button(frame, image = default),
                                 0,
                                 0,
                                 [x, y],
@@ -73,22 +75,19 @@ class Minesweeper:
             self.buttons[key][0].grid(row = self.buttons[key][3][0], 
                                       column = self.buttons[key][3][1])
         
-        # find nearby mines and display number on tile
-        #add mine and count at the end
-        """
-        below is the code for labeling, can use for timer
-        """
+        # create label for number of mines in game
         self.label2 = tkinter.Label(frame, text = "Mines: "+str(self.numberofmines))
         self.label2.grid(row = self.gridsize+1, 
                          column = 0, 
                          columnspan = self.gridsize//3)
-
+        
+        # create label for number of flags user set
         self.label3 = tkinter.Label(frame, text = "Flags: "+str(self.flags))
         self.label3.grid(row = self.gridsize+1, 
                          column = self.gridsize//3, 
                          columnspan = self.gridsize//3)
         
-        #time label
+        # create label for timer
         self.label4 = tkinter.Label(frame, text = "Time: "+str(self.timerCounter))
         self.label4.grid(row = self.gridsize+1, 
                          column = round(self.gridsize//1.5), 
@@ -96,7 +95,6 @@ class Minesweeper:
         
         # start timer
         self.update_time()
-    ## End of __init__
 	
     def lclicked_wrapper(self, button_data):
         return lambda Button: self.lclicked(button_data)
@@ -105,43 +103,56 @@ class Minesweeper:
         return lambda Button: self.rclicked(button_data)
 
     def lclicked(self, button_data):
+        # initialize 2D grid of size 10 by 10
         grid=[[0]*self.gridsize]*self.gridsize
-        if self.mines==0:
+        
+        # this is only ran once, on the very first click
+        if self.mines == 0:
+            # generate the grid with mines marked 'X' 
+            # and number of mines nearby if not a mine
             grid = self.setupgrid(button_data[3])
+            
             for x in range(self.gridsize):
                 for y in range(self.gridsize):
-                    if grid[x][y]=='X':
-                        self.buttons[x,y][1]=1
+                    # if mine, set mine to be y
+                    if grid[x][y] == 'X':
+                        self.buttons[x,y][1] = 1
+                    # else, set number of mines nearby
                     else:
-                        self.buttons[x,y][4]=grid[x][y]
+                        self.buttons[x,y][4] = grid[x][y]
+                        
             self.mines=self.numberofmines
-                    
-        if button_data[1] == 1: #if user clicked a mine
+        
+        # if user clicked a mine
+        if button_data[1] == 1:
             # show all mines and check for flags
             for key in self.buttons:
-                #not a mine and flagged, wrong
+                # if not a mine and flagged, show wrong flag image
                 if self.buttons[key][1] != 1 and self.buttons[key][2] == 2:
                     self.buttons[key][0].config(image = self.tile_wrong)
-                #mine and not flagged, mine
+                # if mine and not flagged, show mine image
                 if self.buttons[key][1] == 1 and self.buttons[key][2] != 2:
                     self.buttons[key][0].config(image = self.tile_mine)
+            
             # end game
             self.gameover()
         else:
-            #change image
-            if button_data[4] == 0: #if neighbors no mine
+            # if neighbors have no mine, open up tiles until numbers or edges
+            if button_data[4] == 0:
                 self.showcells(grid,button_data)
             
-            else: #if neighbors have mine
+            # show number of nearby mines
+            else:
                 button_data[2] = 1
                 self.clicked += 1
                 button_data[0].config(image = self.tile_no[button_data[4]])
-                
+            
+            # if number of left clicks equal to total tiles - total mines in game
             if self.clicked == self.gridsize*self.gridsize - self.numberofmines:
                 self.victory()
 
     def rclicked(self, button_data):
-        # if not clicked
+        # if tile not clicked, flag
         if button_data[2] == 0:
             button_data[0].config(image = self.tile_flag)
             button_data[2] = 2
@@ -149,17 +160,13 @@ class Minesweeper:
             self.flags += 1
             self.update_flags()
         
-        # if flagged, unflag
+        # if already flagged, unflag
         elif button_data[2] == 2:
             button_data[0].config(image = self.tile_plain)
             button_data[2] = 0
             button_data[0].bind('<Button-1>', self.lclicked_wrapper(button_data))
             self.flags -= 1
-            self.update_flags()
-
-    """
-    this is where the label gets updated, timer needs to update this every second
-    """            
+            self.update_flags()        
 
     def update_time(self): 
         if self.gameoverstatus == 0:
@@ -167,7 +174,6 @@ class Minesweeper:
             self.timerCounter = self.timerCounter + 1;
             self.label4.config(text = "Time: "+str(self.timerCounter))
             root.after(1000, self.update_time)
-    
     
     def update_flags(self):
         self.label3.config(text = "Flags: "+str(self.flags))
@@ -188,21 +194,24 @@ class Minesweeper:
         
         
     def writeToFile(self, username):
-        #get user input
-        username = username.lower() #username is case insensitive
+        # username is case insensitive
+        username = username.lower()
         newScore = self.calculateScore()     
         
         #write to googlesheet
         gs.write_to_googleSpreadsheet(username, newScore)
         
+    #only calculate score when player wins
     def calculateScore(self):
-        #only calculate score when player wins
+        # first 1 min, decrease in score will decrease with time
         if self.timerCounter <= 60:   
             rawScore = (300 ** 2 - 60 ** 2) * 60 / self.timerCounter
-            return math.ceil(rawScore)
+            return math.ceil(rawScore) #math function
+        # next 4 min, decrease in score will increase with time
         elif self.timerCounter <= 300:
             rawScore = 300 ** 2 - self.timerCounter ** 2
-            return rawScore #math function
+            return rawScore
+        # winning after 6minutes, 0 score
         else: 
             return 0
 
@@ -253,33 +262,32 @@ class Minesweeper:
         for rowno, row in enumerate(grid):
             for colno, cell in enumerate(row):
                 if cell != 'X':
-                    #Gets the values of the neighbors
+                    # get the values of the neighbors
                     values = [grid[r][c] 
                               for r, c in self.getneighbors(grid, rowno, colno)]
-					# Counts how many are mines
+					# count how many neighbors are mines
                     grid[rowno][colno] = values.count('X')
 
         return grid
 
     def showcells(self, grid, button_data):
-        # Exit function if the cell was already shown
+        # exit function if the cell was already clicked
         if button_data[2]==1:
             return
         
-        # Show current cell
         button_data[2]=1
         self.clicked += 1
         
-        #change image
+        # show current cell
         if button_data[4]==0:
             button_data[0].config(image = self.tile_clicked)
         else:
             button_data[0].config(image = self.tile_no[button_data[4]])
             
-        # Get the neighbors if the cell is empty
+        # get the neighbors if the cell has 0 nearby mines
         if button_data[4] == 0:
             for r, c in self.getneighbors(grid, *button_data[3]):
-                # Repeat function for each neighbor that doesn't have a flag
+                # repeat function for each neighbor that doesn't have a flag
                 if self.buttons[r,c][2] != 2:
                     self.showcells(grid, self.buttons[r,c])
                     
