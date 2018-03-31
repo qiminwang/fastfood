@@ -1,5 +1,5 @@
 """ QF205 G1 Team 6 - MineSweeper Application """
-import random
+from random import randint
 from tkinter import messagebox, simpledialog
 import tkinter
 import time
@@ -235,8 +235,8 @@ class Minesweeper:
         return grid
 
     def getrandomcell(self):
-        a = random.randint(0, self.gridsize - 1)
-        b = random.randint(0, self.gridsize - 1)
+        a = randint(0, self.gridsize - 1)
+        b = randint(0, self.gridsize - 1)
         return (a, b)
 
     def getneighbors(self, grid, rowno, colno):
