@@ -36,7 +36,7 @@ class Minesweeper:
         self.timerCounter = 0
         
         #gameover flag
-        self.gameover = 0
+        self.gameoverstatus = 0
         
         
         # create buttons
@@ -150,7 +150,7 @@ class Minesweeper:
     """            
 
     def update_time(self): 
-        if self.gameover == 0:
+        if self.gameoverstatus == 0:
             global root
             self.timerCounter = self.timerCounter + 1;
             self.label4.config(text = "Time: "+str(self.timerCounter))
@@ -162,13 +162,13 @@ class Minesweeper:
         
     def gameover(self):
         global root
-        self.gameover = 1
+        self.gameoverstatus = 1
         messagebox.showinfo("Game Over", "You Lose!")        
         root.destroy()
 
     def victory(self):
         global root
-        self.gameover = 1
+        self.gameoverstatus = 1
         name = simpledialog.askstring("Input", "Enter Your Name")
         messagebox.showinfo("Game Over", "You Win!")
         self.writeToFile(name)
