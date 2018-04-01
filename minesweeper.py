@@ -261,7 +261,7 @@ class Minesweeper:
             while list(cell) == start or cell in mines or cell in neighbors:
                 cell = self.getrandomcell()
                 
-            mines+=[cell]
+            mines += [cell]
             
         return mines
     
