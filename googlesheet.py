@@ -68,7 +68,9 @@ def write_to_googleSpreadsheet(username, newScore):
     url_string = file.read()
     file.close()
     
-    spreadsheet_id = url_string.split(":")[1].replace(" ", "")  
+    #spreadsheet_id = url_string.split(":")[1].replace(" ", "")  
+    start_index = url_string.index(":") + 1
+    spreadsheet_id = url_string[start_index:].replace(" ", "")
     range_name = 'ScoreTable'
     scoreDic = {}
     
