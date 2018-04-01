@@ -225,7 +225,14 @@ class Minesweeper:
        and return the numbers on the marked grid
     """            
     def setupgrid(self, start):
-        emptygrid = [[0 for i in range(self.gridsize)] for i in range(self.gridsize)]
+        # emptygrid = [[0 for j in range(self.gridsize)] for i in range(self.gridsize)]
+        emptygrid = []
+        for i in range(self.gridsize):
+            row = []
+            for j in range(self.gridsize):
+                row.append(0)
+            emptygrid.append(row)
+        
         mines = self.getmines(emptygrid, start)
         
         for i, j in mines:
