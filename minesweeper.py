@@ -112,7 +112,7 @@ class Minesweeper:
             for y in range(self.gridsize):
                 for x in range(self.gridsize):
                     # if mine, set mine to be y
-                    if grid[x][y] == 'X':
+                    if grid[y][x] == 'X':
                         self.buttons[y,x][1] = 1
                     # else, set number of mines nearby
                     else:
