@@ -178,7 +178,7 @@ class Minesweeper:
     def gameover(self):
         global root
         self.gameoverstatus = 1
-        messagebox.showinfo("Game Over", "You Lose!")    
+        messagebox.showinfo("Game Over", "You Lose!") 
         root.destroy()
 
     def victory(self):
