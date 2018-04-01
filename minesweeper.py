@@ -46,26 +46,26 @@ class Minesweeper:
         # set default image
         default = self.tile_plain
 		
-        for x in range(self.gridsize):
-            for y in range(self.gridsize):
+        for y in range(self.gridsize):
+            for x in range(self.gridsize):
                 # 0 = Button widget
                 # 1 = if a mine y/n (1/0)
                 # 2 = state (0 = unclicked, 1 = clicked, 2 = flagged)
-                # 3 = [x, y] coordinates in the grid
+                # 3 = [y, x] coordinates in the grid
                 # 4 = nearby mines, 0 by default, calculated after placement in grid
-                self.buttons[x, y] = [ tkinter.Button(frame, image = default),
+                self.buttons[y, x] = [ tkinter.Button(frame, image = default),
                                 0,
                                 0,
-                                [x, y],
+                                [y, x],
                                 0 ]
                                 
                 #if left clicked, run lclicked_wrapper function, 
                 #else right clicked run rclicked_wrapper function
-                self.buttons[x, y][0].bind('<Button-1>', 
-                                            self.lclicked_wrapper(self.buttons[x,y]))
+                self.buttons[y, x][0].bind('<Button-1>', 
+                                            self.lclicked_wrapper(self.buttons[y,x]))
                 
-                self.buttons[x, y][0].bind('<Button-3>', 
-                                            self.rclicked_wrapper(self.buttons[x,y]))
+                self.buttons[y, x][0].bind('<Button-3>', 
+                                            self.rclicked_wrapper(self.buttons[y,x]))
                 
         # lay buttons in grid
         for key in self.buttons:
@@ -109,14 +109,14 @@ class Minesweeper:
             # and number of mines nearby if not a mine
             grid = self.setupgrid(button_data[3])
             
-            for x in range(self.gridsize):
-                for y in range(self.gridsize):
+            for y in range(self.gridsize):
+                for x in range(self.gridsize):
                     # if mine, set mine to be y
                     if grid[x][y] == 'X':
-                        self.buttons[x,y][1] = 1
+                        self.buttons[y,x][1] = 1
                     # else, set number of mines nearby
                     else:
-                        self.buttons[x,y][4] = grid[x][y]
+                        self.buttons[y,x][4] = grid[y][x]
                         
             self.mines=self.numberofmines
         
