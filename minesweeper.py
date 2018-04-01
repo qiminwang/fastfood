@@ -14,6 +14,7 @@ class Minesweeper:
         self.tile_mine = tkinter.PhotoImage(file = "images/tile_mine.png")
         self.tile_flag = tkinter.PhotoImage(file = "images/tile_flag.png")
         self.tile_wrong = tkinter.PhotoImage(file = "images/tile_wrong.png")
+        
         self.tile_no = {}
 		
 		#for tile numbers 1-8
@@ -246,8 +247,8 @@ class Minesweeper:
             for j in range(-1, 2):
                 if i == 0 and j == 0:
                     continue
-                elif (-1 < (rowno + i) < len(grid) 
-                      and -1 < (colno + j) < len(grid)):
+                if (-1 < (rowno + i) < len(grid) 
+                    and -1 < (colno + j) < len(grid)):
                     neighbors.append((rowno + i, colno + j))
         
         return neighbors
