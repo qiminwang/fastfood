@@ -71,7 +71,7 @@ def write_to_googleSpreadsheet(username, newScore):
     #alternative way of getting spreadsheet_id
     #spreadsheet_id = url_string.split(": ")[1]
     start_index = url_string.index(":") + 1
-    spreadsheet_id = url_string[start_index:].replace(" ", "")
+    spreadsheet_id = url_string.replace(url_string[start_index:], "")
     range_name = 'ScoreTable'
     scoreDic = {}
     
